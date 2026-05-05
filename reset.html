@@ -1,5 +1,18 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Reset</title>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!user || user.id !== 1) {
+      document.write("<h2>Access denied</h2>");
+      window.location.href = "login.html";
+    }
+  </script>
+
+</head>
 <body>
   <h2>Reset Weekly Scores</h2>
   <button onclick="reset()">Reset</button>

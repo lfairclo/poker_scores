@@ -2,8 +2,18 @@
 <html>
 <head>
   <title>Enter Scores</title>
+
+  <script>
+    const user = JSON.parse(localStorage.getItem("user") || "null");
+
+    if (!user || user.id !== 1) {
+      document.write("<h2>Access denied</h2>");
+    }
+  </script>
+
 </head>
 <body>
+
   <h2>Enter Daily Scores</h2>
 
   <input type="number" id="p1">
@@ -16,11 +26,14 @@
   <button onclick="submitScores()">Submit</button>
 
   <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
+    const API_URL = "YOUR_SCRIPT_URL";
 
     async function submitScores() {
+      const token = localStorage.getItem("token");
+
       const params = new URLSearchParams({
         action: "addScores",
+        token: token,
         p1: p1.value,
         p2: p2.value,
         p3: p3.value,
@@ -29,13 +42,21 @@
         p6: p6.value
       });
 
-      await fetch(API_URL, {
+      const res = await fetch(API_URL, {
         method: "POST",
         body: params
       });
 
+      const data = await res.json();
+
+      if (data.status !== "success") {
+        alert("Not authorised");
+        return;
+      }
+
       alert("Saved");
     }
   </script>
+
 </body>
 </html>
