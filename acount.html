@@ -8,7 +8,6 @@
 <input id="password" placeholder="New Password"><br>
 
 <input type="file" id="fileInput"><br>
-<input id="folderId" placeholder="Google Drive Folder ID"><br>
 
 <progress id="progressBar" value="0" max="100"></progress><br>
 
@@ -63,7 +62,6 @@ async function uploadFile() {
           image: base64,
           mime: file.type,
           name: file.name,
-          folderId: folderId.value
         })
       });
 
