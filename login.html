@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Login</h2>
+
+  <input type="password" id="password">
+  <button onclick="login()">Login</button>
+
+  <script>
+    const API_URL = "YOUR_SCRIPT_URL";
+
+    async function login() {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        body: new URLSearchParams({
+          action: "login",
+          password: password.value
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.status === "success") {
+        localStorage.setItem("user", JSON.stringify(data));
+        window.location.href = "account.html";
+      } else {
+        alert("Wrong password");
+      }
+    }
+  </script>
+</body>
+</html>

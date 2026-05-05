@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Reset Weekly Scores</h2>
+  <button onclick="reset()">Reset</button>
+
+  <script>
+    const API_URL = "YOUR_SCRIPT_URL";
+
+    async function reset() {
+      await fetch(API_URL, {
+        method: "POST",
+        body: new URLSearchParams({ action: "resetScores" })
+      });
+
+      alert("Reset complete");
+    }
+  </script>
+</body>
+</html>

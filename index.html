@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Enter Scores</title>
+</head>
+<body>
+  <h2>Enter Daily Scores</h2>
+
+  <input type="number" id="p1">
+  <input type="number" id="p2">
+  <input type="number" id="p3">
+  <input type="number" id="p4">
+  <input type="number" id="p5">
+  <input type="number" id="p6">
+
+  <button onclick="submitScores()">Submit</button>
+
+  <script>
+    const API_URL = "YOUR_SCRIPT_URL";
+
+    async function submitScores() {
+      const params = new URLSearchParams({
+        action: "addScores",
+        p1: p1.value,
+        p2: p2.value,
+        p3: p3.value,
+        p4: p4.value,
+        p5: p5.value,
+        p6: p6.value
+      });
+
+      await fetch(API_URL, {
+        method: "POST",
+        body: params
+      });
+
+      alert("Saved");
+    }
+  </script>
+</body>
+</html>
