@@ -1,34 +1,105 @@
 <!DOCTYPE html>
 <html>
 <body>
-  <h2>Account</h2>
 
-  <input id="name" placeholder="Name"><br>
-  <input id="password" placeholder="New Password"><br>
-  <input id="image" placeholder="Image URL"><br>
+<h2>Account</h2>
 
-  <button onclick="save()">Save</button>
+<input id="name" placeholder="Name"><br>
+<input id="password" placeholder="New Password"><br>
 
-  <script>
-    const API_URL = "https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
-    const user = JSON.parse(localStorage.getItem("user"));
+<input type="file" id="fileInput"><br>
+<input id="folderId" placeholder="Google Drive Folder ID"><br>
 
-    document.getElementById("name").value = user.name;
+<progress id="progressBar" value="0" max="100"></progress><br>
 
-    async function save() {
-      await fetch(API_URL, {
+<button onclick="save()">Save</button>
+
+<script>
+const API_URL = "https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
+const user = JSON.parse(localStorage.getItem("user"));
+const token = localStorage.getItem("token");
+
+document.getElementById("name").value = user.name;
+
+// --- FILE UPLOAD ---
+async function uploadFile() {
+  const file = fileInput.files[0];
+  if (!file) return null;
+
+  // Validate type
+  if (!["image/png","image/jpeg","image/webp"].includes(file.type)) {
+    alert("Invalid file type");
+    return null;
+  }
+
+  // Validate size (2MB)
+  if (file.size > 2 * 1024 * 1024) {
+    alert("File too large (max 2MB)");
+    return null;
+  }
+
+  const reader = new FileReader();
+
+  return new Promise((resolve) => {
+    reader.onload = async function () {
+
+      const base64 = reader.result.split(",")[1];
+
+      // fake progress animation (since fetch has no progress)
+      let progress = 0;
+      const bar = document.getElementById("progressBar");
+
+      const interval = setInterval(() => {
+        progress += 10;
+        bar.value = progress;
+        if (progress >= 90) clearInterval(interval);
+      }, 100);
+
+      const res = await fetch(API_URL, {
         method: "POST",
         body: new URLSearchParams({
-          action: "updateAccount",
-          id: user.id,
-          name: name.value,
-          password: password.value,
-          image: image.value
+          action: "uploadImage",
+          token: token,
+          image: base64,
+          mime: file.type,
+          name: file.name,
+          folderId: folderId.value
         })
       });
 
-      alert("Updated");
-    }
-  </script>
+      const data = await res.json();
+
+      bar.value = 100;
+
+      resolve(data.url);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+// --- SAVE ---
+async function save() {
+  let imageUrl = null;
+
+  if (fileInput.files.length > 0) {
+    imageUrl = await uploadFile();
+  }
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: new URLSearchParams({
+      action: "updateAccount",
+      token: token,
+      name: name.value,
+      password: password.value,
+      image: imageUrl
+    })
+  });
+
+  alert("Updated");
+}
+</script>
+
 </body>
 </html>
