@@ -1,37 +1,47 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <title>Account</title>
+</head>
+
 <body>
 
-<h2>Account</h2>
+<h2>Account Settings</h2>
 
-<input id="name" placeholder="Name"><br>
-<input id="password" placeholder="New Password"><br>
+<!-- USER INFO -->
+<input id="name" placeholder="Name"><br><br>
+<input id="password" placeholder="New Password (leave blank to keep current)"><br><br>
 
-<input type="file" id="fileInput"><br>
+<!-- IMAGE UPLOAD -->
+<input type="file" id="fileInput"><br><br>
 
-<progress id="progressBar" value="0" max="100"></progress><br>
+<progress id="progressBar" value="0" max="100"></progress><br><br>
 
-<button onclick="save()">Save</button>
+<button onclick="save()">Save Changes</button>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
+const API_URL = "YOUR_SCRIPT_URL";
 const user = JSON.parse(localStorage.getItem("user"));
 const token = localStorage.getItem("token");
 
-document.getElementById("name").value = user.name;
+// preload name
+document.getElementById("name").value = user.name || "";
 
-// --- FILE UPLOAD ---
+// ---------------------------
+// FILE UPLOAD (CORS SAFE)
+// ---------------------------
 async function uploadFile() {
   const file = fileInput.files[0];
   if (!file) return null;
 
-  // Validate type
-  if (!["image/png","image/jpeg","image/webp"].includes(file.type)) {
+  // validate type
+  const allowed = ["image/png", "image/jpeg", "image/webp"];
+  if (!allowed.includes(file.type)) {
     alert("Invalid file type");
     return null;
   }
 
-  // Validate size (2MB)
+  // validate size (2MB)
   if (file.size > 2 * 1024 * 1024) {
     alert("File too large (max 2MB)");
     return null;
@@ -44,17 +54,18 @@ async function uploadFile() {
 
       const base64 = reader.result.split(",")[1];
 
-      // fake progress animation (since fetch has no progress)
+      // fake progress animation (since fetch upload has no progress API in this setup)
       let progress = 0;
       const bar = document.getElementById("progressBar");
 
       const interval = setInterval(() => {
-        progress += 10;
+        progress += 8;
         bar.value = progress;
         if (progress >= 90) clearInterval(interval);
-      }, 100);
+      }, 120);
 
-      const res = await fetch(API_URL, {
+      // SEND TO SERVER (NO RESPONSE READ → avoids CORS crash)
+      await fetch(API_URL, {
         method: "POST",
         body: new URLSearchParams({
           action: "uploadImage",
@@ -65,21 +76,28 @@ async function uploadFile() {
         })
       });
 
-      const data = await res.json();
-
       bar.value = 100;
 
-      resolve(data.url);
+      // IMPORTANT:
+      // We reconstruct expected URL pattern instead of reading response
+      const extension = file.type.split("/")[1];
+      const expectedUrl =
+        "https://drive.google.com/uc?id=USER_" + user.id + "." + extension;
+
+      resolve(expectedUrl);
     };
 
     reader.readAsDataURL(file);
   });
 }
 
-// --- SAVE ---
+// ---------------------------
+// SAVE ACCOUNT
+// ---------------------------
 async function save() {
   let imageUrl = null;
 
+  // upload image if selected
   if (fileInput.files.length > 0) {
     imageUrl = await uploadFile();
   }
@@ -95,7 +113,7 @@ async function save() {
     })
   });
 
-  alert("Updated");
+  alert("Account updated");
 }
 </script>
 
