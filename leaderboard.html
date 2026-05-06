@@ -107,7 +107,7 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
 
 async function load() {
-  const res = await fetch(API_URL + "?action=leaderboard");
+  const res = await fetch(API_URL + "?action=getLeaderboard");
   const data = await res.json();
 
   // sort by total
