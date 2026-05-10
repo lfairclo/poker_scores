@@ -34,48 +34,59 @@
       margin: 10px 0;
       background: rgba(255,255,255,0.08);
       border-radius: 12px;
+      transition: 0.2s;
+    }
+
+    .row:hover {
+      transform: scale(1.01);
+      background: rgba(255,255,255,0.12);
     }
 
     .rank {
       font-size: 22px;
-      width: 40px;
+      width: 60px;
       text-align: center;
+      font-weight: bold;
     }
 
     .user {
       display: flex;
       align-items: center;
       gap: 12px;
-      width: 180px;
+      width: 200px;
     }
 
     .user img {
-      width: 40px;
-      height: 40px;
+      width: 50px;
+      height: 50px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid white;
+      border: 3px solid white;
+      background: rgba(255,255,255,0.2);
     }
 
     .scores {
       display: flex;
-      gap: 10px;
+      gap: 8px;
       flex: 1;
       justify-content: center;
+      flex-wrap: wrap;
     }
 
     .scoreBox {
-      width: 30px;
+      width: 32px;
       text-align: center;
-      background: rgba(255,255,255,0.1);
-      padding: 5px;
-      border-radius: 6px;
+      background: rgba(255,255,255,0.12);
+      padding: 6px;
+      border-radius: 8px;
+      font-weight: bold;
     }
 
     .total {
-      width: 80px;
+      width: 90px;
       text-align: right;
       font-weight: bold;
+      font-size: 20px;
     }
 
     .header {
@@ -84,33 +95,52 @@
       padding: 10px;
       opacity: 0.7;
       font-size: 12px;
+      margin-bottom: 10px;
     }
+
+    .gold {
+      background: rgba(255,215,0,0.2);
+    }
+
+    .silver {
+      background: rgba(192,192,192,0.15);
+    }
+
+    .bronze {
+      background: rgba(205,127,50,0.18);
+    }
+
   </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h1>Leaderboard</h1>
+
+  <h1>🏆 Leaderboard 🏆</h1>
 
   <div class="header">
-    <div>Rank</div>
-    <div>User</div>
-    <div>Scores (Last 10 Days)</div>
-    <div>Total</div>
+    <div style="width:60px;">Rank</div>
+    <div style="width:200px;">User</div>
+    <div style="flex:1;text-align:center;">Scores (Last 10 Days)</div>
+    <div style="width:90px;text-align:right;">Total</div>
   </div>
 
   <div id="board"></div>
+
 </div>
 
 <script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
 
-async function load() {
-  const res = await fetch(API_URL + "?action=leaderboard");
-  const data = await res.json();
+const API_URL =
+"https://script.google.com/macros/s/AKfycbzzaan_gI3KkmytUAPWvl59Ib3LkvbdrHuY4J-9a9BVPBTL619U5TqCWXuIQIPgVcBEbQ/exec";
 
-  // sort by total
+// ----------------------
+// JSONP CALLBACK
+// ----------------------
+function leaderboardCallback(data) {
+
+  // sort descending
   data.sort((a, b) => b.total - a.total);
 
   const board = document.getElementById("board");
@@ -121,15 +151,22 @@ async function load() {
     const row = document.createElement("div");
     row.className = "row";
 
-    const scoresHTML = user.scores.map(s =>
-      `<div class="scoreBox">${s}</div>`
+    // top 3 colours
+    if (index === 0) row.classList.add("gold");
+    if (index === 1) row.classList.add("silver");
+    if (index === 2) row.classList.add("bronze");
+
+    const scoresHTML = user.scores.map(score =>
+      `<div class="scoreBox">${score}</div>`
     ).join("");
 
     row.innerHTML = `
-      <div class="rank">#${index + 1}</div>
+      <div class="rank">
+        #${index + 1}
+      </div>
 
       <div class="user">
-        <img src="${user.image || 'https://via.placeholder.com/40'}">
+        <img src="${user.image || 'https://via.placeholder.com/50'}">
         <div>${user.name}</div>
       </div>
 
@@ -137,14 +174,26 @@ async function load() {
         ${scoresHTML}
       </div>
 
-      <div class="total">${user.total}</div>
+      <div class="total">
+        ${user.total}
+      </div>
     `;
 
     board.appendChild(row);
   });
 }
 
-load();
+// ----------------------
+// LOAD JSONP SCRIPT
+// ----------------------
+const script = document.createElement("script");
+
+script.src =
+  API_URL +
+  "?action=leaderboard&callback=leaderboardCallback";
+
+document.body.appendChild(script);
+
 </script>
 
 </body>
